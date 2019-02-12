@@ -36,7 +36,8 @@ nom_court='milkyway'
 extension='.jpg'    #advice: use jpg on jpg image (smaller than png in size)
 offset_X_tot=0 #if first offset !=0 (allow to start at middle and keep going with a diferent offset_X)
 offset_X=0 # initialize offset and can be use to choose offset instead of dependence on nbr_offset
-nbr_offset=1    #number of image needed with a constant offset between (must be changed to specify a precise angle)
+nbr_offset=5    #number of image needed with a constant offset between (must be changed to specify a precise angle)
+fixed_background=False
 nom_image=dossier+nom_court+extension
 #------------------------------------------------------------------------------
 print ("M ","%.1e"%M,"M☉","\t%.2e"%(M*Ms),"Kg")
@@ -279,9 +280,9 @@ def matrices_creation(interpolation):
     img_matrice_y=np.array([[-1]*axe_X]*axe_Y)
     debut=time.process_time()
     if FOV<FOV_img:
-        print("\nmatrix estimation time:",round(5.86*10**(-5)*(FOV/FOV_img)*(axe_X*axe_Y-(2*(180-last_angle)/360*axe_X)**2),1)) #modif les FOV en x et y car diff si on a fov_x=360 fov_y=180
+        print("\nmatrix estimation time:",round(3.92*10**(-5)*(FOV/FOV_img)*(axe_X*axe_Y-(2*(180-last_angle)/360*axe_X)**2),1)) #modif les FOV en x et y car diff si on a fov_x=360 fov_y=180
     else:
-        print("\nmatrix estimation time:",round(5.86*10**(-5)*(axe_X*axe_Y-(2*(180-last_angle)/360*axe_X)**2),1)) #modif les FOV en x et y car diff si on a fov_x=360 fov_y=180
+        print("\nmatrix estimation time:",round(3.92*10**(-5)*(axe_X*axe_Y-(2*(180-last_angle)/360*axe_X)**2),1)) #modif les FOV en x et y car diff si on a fov_x=360 fov_y=180
 #    for x in range(3000,axe_X-3000):        
     for x in range(0,axe_X): #colomns scan   (phi)   mettre autre axe_x pour commencer que debut vrai image (enleve partie noir)
         if x==round(axe_X/4):
@@ -318,7 +319,8 @@ def img_pixels(img_debut,img2):
             else:       
 #                pixels2[x,y] = (0, 0, 0) #optional (colorize the black hole instead of alpha)
                 ""
-    img2=img_offset_X(img2,-offset_X_tot)  # if want a fixed background and moving black hole
+    if fixed_background==True:
+        img2=img_offset_X(img2,-offset_X_tot)  # if want a fixed background and moving black hole
     fin=time.process_time()
     print("pixels time :",round(fin-debut,1))         
 #    img2.save(nom_court+" D="+str(D)+" Rs="+str(Rs)+" size="+str(final_size_img)+".png") #use it instead if use high contrasted image
@@ -393,9 +395,9 @@ else:
 if x_file == True and y_file == True:
     print("\nmatrices already exist, skipping steps")
     if FOV<FOV_img:
-        print("saving this time:",round(1.36*5.5*10**(-5)*(FOV/FOV_img)*(axe_X*axe_Y-(2*(180-last_angle)/360*axe_X)**2),1))
+        print("saving this time:",round(3.92*10**(-5)*(FOV/FOV_img)*(axe_X*axe_Y-(2*(180-last_angle)/360*axe_X)**2),1))
     else:
-        print("saving this time:",round(1.36*5.5*10**(-5)*(axe_X*axe_Y-(2*(180-last_angle)/360*axe_X)**2),1))
+        print("saving this time:",round(3.92*10**(-5)*(axe_X*axe_Y-(2*(180-last_angle)/360*axe_X)**2),1))
     print("\nmatrix opening estimation:",round(1.65*10**(-6)*axe_X*axe_Y,1)) 
     matrix_opening_debut=time.process_time()
     img_matrice_x=np.array([-1]*axe_X)
