@@ -36,7 +36,7 @@ nom_court='milkyway'
 extension='.jpg'    #advice: use jpg on jpg image (smaller than png in size)
 offset_X_tot=0 #if first offset !=0 (allow to start at middle and keep going with a diferent offset_X)
 offset_X=0 # initialize offset and can be use to choose offset instead of dependence on nbr_offset
-nbr_offset=5    #number of image needed with a constant offset between (must be changed to specify a precise angle)
+nbr_offset=1    #number of image needed with a constant offset between (must be changed to specify a precise angle)
 fixed_background=False
 nom_image=dossier+nom_court+extension
 #------------------------------------------------------------------------------
