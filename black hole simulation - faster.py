@@ -253,7 +253,7 @@ def find_position(x,y,interpolation):
     if seen_angle>180: #only right because spherical problem (not right with Kerr)
         seen_angle=360-seen_angle
         try:
-            deviated_angle=360-interpolation(seen_angle) #search deviated angle base on seen angle
+#            deviated_angle=360-interpolation(seen_angle) #search deviated angle base on seen angle
 #            print(deviated_angle,deviated_angle_splin[int(round(seen_angle*20000/last_angle))])
             deviated_angle=360-deviated_angle_splin[int(seen_angle*(npts-1)/last_angle)] #search deviated angle base on seen angle           
 #            print(seen_angle,round(seen_angle*20000/last_angle),deviated_angle)
