@@ -22,7 +22,7 @@ Rs=8    #Schwarzschild radius in ua
 M=Rs*c**2/2/G*Ds/Ms  #Black hole mass in solar masses  (del if use solar mass)
 D=50    #distance from the black hole in ua
 final_size_img=1000 # in axe_X
-use_matrix=True #use matrices if exists
+use_matrix=False #use matrices if exists
 save_matrix=True #False: if don't want to save countless matrices, True: will save or overwrite matrices if exists
 kind='linear'  #interpolation: linear for speed(less accurate), cubic for precision (slow)
 FOV_img=360    #the image FOV (it doesn't change the current image FOV !)
@@ -200,8 +200,8 @@ def listdirectory2(path,matrix_file):
     return False
 # =============================================================================
 def spheric2cart(theta,phi):
-    theta=theta/180*math.pi  
-    phi=phi/180*math.pi
+#    theta=theta/180*math.pi  
+#    phi=phi/180*math.pi
     x = math.sin(theta) * math.cos(phi)
     y = math.sin(theta) * math.sin(phi)
     z = math.cos(theta)    
@@ -209,13 +209,13 @@ def spheric2cart(theta,phi):
 # =============================================================================
 def cart2spheric(x,y,z):
     #doesn't compute r because chosen egal to 1
-    theta=math.acos(z)*180/math.pi
-    phi=math.atan2(y,x)*180/math.pi
+    theta=math.acos(z)
+    phi=math.atan2(y,x)
     while phi<0: #define phi [0,360]
-        phi+=360
+        phi+=2*math.pi
     while theta<0: # define theta [0,180]
-        theta+=180 
-    if phi==360:
+        theta+=math.pi
+    if phi==2*math.pi:
         phi=0
     return theta,phi
 # =============================================================================
@@ -239,15 +239,16 @@ def find_position(x,y,interpolation):
     phi,theta=x*FOV_img/360/img_res,y*FOV_img_Y/180/img_res_Y #convert position in spheric coord
     phi,theta=phi+(360-FOV_img)/2,theta+(180-FOV_img_Y)/2
 #    print(phi,theta)
-    u,v,w=spheric2cart(theta,phi) #give cartesian coord of pixel
+    u,v,w=spheric2cart(math.radians(theta),math.radians(phi) ) #give cartesian coord of pixel
     if theta==90: #needed to avoid error with atan()
         beta=0
     elif phi==180 or phi==0:
-        beta=math.pi/2        
+        beta=math.radians(90)       
     else:
         beta=-math.atan(w/v) #see complex number argument to find angle between plan 0xv and equator (same value for all x -> projection on y,z) 
     v2= np.dot(rotation_matrix(beta), [u,v,w]) #take 3*3 created matrix and aplly to vector
     _,seen_angle=cart2spheric(v2[0],v2[1],v2[2])    #return phi in equator "projection"
+    seen_angle=math.degrees(seen_angle)
 
     if seen_angle>360: #assure angle is in [0,360]
         seen_angle-=360
@@ -264,9 +265,10 @@ def find_position(x,y,interpolation):
             deviated_angle=deviated_angle_splin[int(seen_angle*(npts-1)/last_angle)]#search deviated angle base on seen angle           
         except:
             return -1,-1  #inside photosphere (black hole)       
-    u,v,w=spheric2cart(90,deviated_angle) #get cart coord of deviated pixel
+    u,v,w=spheric2cart(math.radians(90) ,math.radians(deviated_angle)) #get cart coord of deviated pixel
     v2= np.dot(rotation_matrix(-beta), [u,v,w]) #rotate back to the original plan
     theta,phi=cart2spheric(v2[0],v2[1],v2[2])   #give spheric coord of deviated pixel
+    theta,phi=math.degrees(theta),math.degrees(phi)
     phi,theta=phi-(360-FOV_img)/2,theta-(180-FOV_img_Y)/2
     x2,y2=phi*360/FOV_img*img_res,theta*180/FOV_img_Y*img_res_Y #give deviated angle pixel position
     return x2,y2   # return float but matrices will implicitly floor them
@@ -277,9 +279,9 @@ def matrices_creation(interpolation):
     img_matrice_y=np.array([[-1]*axe_X]*axe_Y)
     debut=time.process_time()
     if FOV<FOV_img:
-        print("\nmatrix estimation time:",round(3.73*10**(-5)*(FOV/FOV_img)*(axe_X*axe_Y-(2*(180-last_angle)/360*axe_X)**2),1)) #modif les FOV en x et y car diff si on a fov_x=360 fov_y=180
+        print("\nmatrix estimation time:",round(3.42*10**(-5)*(FOV/FOV_img)*(axe_X*axe_Y-(2*(180-last_angle)/360*axe_X)**2),1)) #modif les FOV en x et y car diff si on a fov_x=360 fov_y=180
     else:
-        print("\nmatrix estimation time:",round(3.73*10**(-5)*(axe_X*axe_Y-(2*(180-last_angle)/360*axe_X)**2),1)) #modif les FOV en x et y car diff si on a fov_x=360 fov_y=180
+        print("\nmatrix estimation time:",round(3.42*10**(-5)*(axe_X*axe_Y-(2*(180-last_angle)/360*axe_X)**2),1)) #modif les FOV en x et y car diff si on a fov_x=360 fov_y=180
 #    for x in range(3000,axe_X-3000):        
     for x in range(0,axe_X): #colomns scan   (phi)   mettre autre axe_x pour commencer que debut vrai image (enleve partie noir)
         if x==round(axe_X/4):
@@ -288,7 +290,8 @@ def matrices_creation(interpolation):
             print("50%")
         elif x==round(axe_X*3/4):
             print("75%")
-#        for y in range(1500,axe_Y-1500): take back old program to resize image        
+#        for y in range(1500,axe_Y-1500): take back old program to resize image    
+#        y=np.linspace(0,axe_Y-1,axe_Y)  # doesn't work but need to be test if reduce time            
         for y in range(0,axe_Y): #lines scan (theta)
             x2,y2=find_position(x,y,interpolation) #search deviated angle pixel position
             img_matrice_x[y,x]=x2 #create matrices to use data at any time
@@ -391,9 +394,9 @@ else:
 if x_file == True and y_file == True:
     print("\nmatrices already exist, skipping steps")
     if FOV<FOV_img:
-        print("saving this time:",round(3.73*10**(-5)*(FOV/FOV_img)*(axe_X*axe_Y-(2*(180-last_angle)/360*axe_X)**2),1))
+        print("saving this time:",round(3.42*10**(-5)*(FOV/FOV_img)*(axe_X*axe_Y-(2*(180-last_angle)/360*axe_X)**2),1))
     else:
-        print("saving this time:",round(3.73*10**(-5)*(axe_X*axe_Y-(2*(180-last_angle)/360*axe_X)**2),1))
+        print("saving this time:",round(3.42*10**(-5)*(axe_X*axe_Y-(2*(180-last_angle)/360*axe_X)**2),1))
     print("\nmatrix opening estimation:",round(1.65*10**(-6)*axe_X*axe_Y,1)) 
     matrix_opening_debut=time.process_time()
     img_matrice_x=np.array([-1]*axe_X)
