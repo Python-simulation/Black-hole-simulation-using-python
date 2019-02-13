@@ -51,15 +51,15 @@ def fun(phi,u):
     v1=3/2*Rs*u[0]**2-u[0] #correspond to u"
     return ([v0,v1])
 # =============================================================================
+#def eventR(phi,u): #not needed and don't work with ivp (without it we get an error message but irrelevant)
+#    """stop integration if radius > sphere limit"""
+#    R=1000
+#    return (1/u[0]-math.sqrt(R**2-D**2*math.sin(phi)**2)+D*math.cos(phi))
+#eventR.terminal = True
 def eventRs(phi,u):
     """stop integration if radius < black hole radius"""
     return (1/u[0]-Rs)
 eventRs.terminal = True
-#def eventR(phi,u): #not needed and don't work with ivp (without it we get an error message but irrelevant)
-#    """stop integration if radius > sphere limit"""
-#    R=60000000
-#    return (1/u[0]-math.sqrt(R**2-D**2*math.sin(phi)**2)+D*math.cos(phi))
-#eventR.terminal = True
 # =============================================================================
 def integration(D,alpha):
     """Integrate the function "fun" using solve_ivp.
@@ -69,7 +69,7 @@ def integration(D,alpha):
     if alpha==180:
         return [D],[0]         # if angle= pi then, tan(pi)=0 so 1/tan=1/0
     y0=[1/D, 1/(D*math.tan(alpha*math.pi/180))] #initial value for position and angular speed
-    sol=solve_ivp(fun=fun, t_span=[0,t_max], y0=y0, method='Radau',dense_output=False, events=[eventRs])#,t_eval=np.linspace(0,t_max,10000)) #eventR
+    sol=solve_ivp(fun=fun, t_span=[0,t_max], y0=y0, method='Radau',dense_output=False, events=[eventRs])#,eventR])#,t_eval=np.linspace(0,t_max,10000))
     if sol.t[-1]==t_max:
         raise StopIteration ("integration error, alpha reached computing limit (loop number)")
     phi=sol.t
@@ -170,7 +170,7 @@ def splin(x_pivot,f_pivot):
 def img_offset_X(img_debut,offset_X):
     """Return the image with an offset in the X-axis. Allow to creat illusion of black hole movement"""
     if FOV != 360 and nbr_offset != 1 :
-        raise StopIteration ("Can't compute for FOV != 360° yet")
+        raise StopIteration ("Can't compute offset for FOV != 360°")
     axe_X=img_debut.size[0]
     axe_Y=img_debut.size[1]
     while offset_X >= axe_X:
@@ -254,17 +254,14 @@ def find_position(x,y,interpolation):
     if seen_angle>180: #only right because spherical problem (not right with Kerr)
         seen_angle=360-seen_angle
         try:
-#            deviated_angle=360-interpolation(seen_angle) #search deviated angle base on seen angle
-#            print(deviated_angle,deviated_angle_splin[int(round(seen_angle*20000/last_angle))])
+#            deviated_angle=360-interpolation(seen_angle) #old version slower
             deviated_angle=360-deviated_angle_splin[int(seen_angle*(npts-1)/last_angle)] #search deviated angle base on seen angle           
-#            print(seen_angle,round(seen_angle*20000/last_angle),deviated_angle)
         except:
             return -1,-1 #inside photosphere (black hole)
     else:
         try:
-#            deviated_angle=interpolation(seen_angle)#search deviated angle base on seen angle
-            deviated_angle=deviated_angle_splin[int(seen_angle*(npts-1)/last_angle)]#search deviated angle base on seen angle
-            
+#            deviated_angle=interpolation(seen_angle) #old version slower
+            deviated_angle=deviated_angle_splin[int(seen_angle*(npts-1)/last_angle)]#search deviated angle base on seen angle           
         except:
             return -1,-1  #inside photosphere (black hole)       
     u,v,w=spheric2cart(90,deviated_angle) #get cart coord of deviated pixel
@@ -328,7 +325,6 @@ def img_pixels(img_debut,img2):
     if nbr_offset==1:
         img2.show()   
         img2.save(nom_court+" D="+str(D)+" Rs="+str(Rs)+" size="+str(final_size_img)+extension)  #use png instead if accuracy needed  
-
     else:
         img2.save(nom_court+" D="+str(D)+" Rs="+str(Rs)+" size="+str(final_size_img)+" offset_X="+str(offset_X_tot)+extension)
     return img2
