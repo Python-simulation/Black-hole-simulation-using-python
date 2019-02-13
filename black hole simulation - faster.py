@@ -68,7 +68,7 @@ def integration(D,alpha):
         return [0],[0]          #r and phi=0
     if alpha==180:
         return [D],[0]         # if angle= pi then, tan(pi)=0 so 1/tan=1/0
-    y0=[1/D, 1/(D*math.tan(alpha*math.pi/180))] #initial value for position and angular speed
+    y0=[1/D, 1/(D*math.tan(math.radians(alpha)))] #initial value for position and angular speed
     sol=solve_ivp(fun=fun, t_span=[0,t_max], y0=y0, method='Radau',dense_output=False, events=[eventRs])#,eventR])#,t_eval=np.linspace(0,t_max,10000))
     if sol.t[-1]==t_max:
         raise StopIteration ("integration error, alpha reached computing limit (loop number)")
@@ -127,7 +127,7 @@ def trajectories(D,alpha_finder,img_res,Rs):
             r,phi=integration(D,alpha) 
             if r[-1]>Rs*1.1: #if not capture by black hole
                 seen_angle.append(180-alpha) #put 180 in the center
-                deviated_angle.append(180/math.pi*(phi[-1]+math.asin(D/r[-1]*math.sin(phi[-1]))))    
+                deviated_angle.append(math.degrees((phi[-1]+math.asin(D/r[-1]*math.sin(phi[-1])))))   
                 Ci='C'+str(i)
                 ax.plot(phi,r,Ci)   #plot one trajectory   
         if kind=='linear':
@@ -200,8 +200,6 @@ def listdirectory2(path,matrix_file):
     return False
 # =============================================================================
 def spheric2cart(theta,phi):
-#    theta=theta/180*math.pi  
-#    phi=phi/180*math.pi
     x = math.sin(theta) * math.cos(phi)
     y = math.sin(theta) * math.sin(phi)
     z = math.cos(theta)    
@@ -212,15 +210,14 @@ def cart2spheric(x,y,z):
     theta=math.acos(z)
     phi=math.atan2(y,x)
     while phi<0: #define phi [0,360]
-        phi+=2*math.pi
+        phi+=math.radians(360)
     while theta<0: # define theta [0,180]
         theta+=math.pi
-    if phi==2*math.pi:
+    if phi==math.radians(360):
         phi=0
     return theta,phi
 # =============================================================================
 def rotation_matrix(beta):
-#    beta*=math.pi/180
     """from https://stackoverflow.com/questions/6802577/rotation-of-3d-vector
     Return the rotation matrix associated with counterclockwise rotation about
     the x axis by beta degree."""
