@@ -6,6 +6,7 @@ from scipy.interpolate import interp1d  #use for interpolation
 import time                         #use to check computation time
 from scipy.integrate import solve_ivp #integrate ordinary differential equations
 import os.path                       #use to search files on computer
+from numba import jit
 vrai_debut=time.process_time()
 # =============================================================================                 
 #Variables & constants initialisation (don't change)
@@ -199,12 +200,14 @@ def listdirectory2(path,matrix_file):
                 return True
     return False
 # =============================================================================
+@jit(nopython=True)
 def spheric2cart(theta,phi):
     x = math.sin(theta) * math.cos(phi)
     y = math.sin(theta) * math.sin(phi)
     z = math.cos(theta)    
     return x,y,z
 # =============================================================================
+@jit(nopython=True)
 def cart2spheric(x,y,z):
     #doesn't compute r because chosen egal to 1
     theta=math.acos(z)
@@ -217,6 +220,7 @@ def cart2spheric(x,y,z):
         phi=0
     return theta,phi
 # =============================================================================
+@jit(nopython=True)
 def rotation_matrix(beta):
     """from https://stackoverflow.com/questions/6802577/rotation-of-3d-vector
     Return the rotation matrix associated with counterclockwise rotation about
@@ -276,9 +280,9 @@ def matrices_creation(interpolation):
     img_matrice_y=np.array([[-1]*axe_X]*axe_Y)
     debut=time.process_time()
     if FOV<FOV_img:
-        print("\nmatrix estimation time:",round(3.42*10**(-5)*(FOV/FOV_img)*(axe_X*axe_Y-(2*(180-last_angle)/360*axe_X)**2),1)) #modif les FOV en x et y car diff si on a fov_x=360 fov_y=180
+        print("\nmatrix estimation time:",round(2.98*10**(-5)*(FOV/FOV_img)*(axe_X*axe_Y-(2*(180-last_angle)/360*axe_X)**2),1)) #modif les FOV en x et y car diff si on a fov_x=360 fov_y=180
     else:
-        print("\nmatrix estimation time:",round(3.42*10**(-5)*(axe_X*axe_Y-(2*(180-last_angle)/360*axe_X)**2),1)) #modif les FOV en x et y car diff si on a fov_x=360 fov_y=180
+        print("\nmatrix estimation time:",round(2.98*10**(-5)*(axe_X*axe_Y-(2*(180-last_angle)/360*axe_X)**2),1)) #modif les FOV en x et y car diff si on a fov_x=360 fov_y=180
 #    for x in range(3000,axe_X-3000):        
     for x in range(0,axe_X): #colomns scan   (phi)   mettre autre axe_x pour commencer que debut vrai image (enleve partie noir)
         if x==round(axe_X/4):
@@ -391,9 +395,9 @@ else:
 if x_file == True and y_file == True:
     print("\nmatrices already exist, skipping steps")
     if FOV<FOV_img:
-        print("saving this time:",round(3.42*10**(-5)*(FOV/FOV_img)*(axe_X*axe_Y-(2*(180-last_angle)/360*axe_X)**2),1))
+        print("saving this time:",round(2.98*10**(-5)*(FOV/FOV_img)*(axe_X*axe_Y-(2*(180-last_angle)/360*axe_X)**2),1))
     else:
-        print("saving this time:",round(3.42*10**(-5)*(axe_X*axe_Y-(2*(180-last_angle)/360*axe_X)**2),1))
+        print("saving this time:",round(2.98*10**(-5)*(axe_X*axe_Y-(2*(180-last_angle)/360*axe_X)**2),1))
     print("\nmatrix opening estimation:",round(1.65*10**(-6)*axe_X*axe_Y,1)) 
     matrix_opening_debut=time.process_time()
     img_matrice_x=np.array([-1]*axe_X)
