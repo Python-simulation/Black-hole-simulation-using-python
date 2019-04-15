@@ -6,7 +6,7 @@ from scipy.interpolate import interp1d  #use for interpolation
 import time                         #use to check computation time
 from scipy.integrate import solve_ivp #integrate ordinary differential equations
 import os.path                       #use to search files on computer
-from tkinter import Button, Tk, Frame, Entry, Label, Checkbutton, BooleanVar
+from tkinter import Button, Tk, Frame, Entry, Label, Checkbutton, BooleanVar, StringVar
 import sys
 from numba import jit
 
@@ -43,8 +43,8 @@ offset_X_tot=0 #if first offset !=0 (allow to start at middle and keep going wit
 offset_X=0 # initialize offset and can be use to choose offset instead of dependence on nbr_offset
 nbr_offset=1    #number of image needed with a constant offset between (must be changed to specify a precise angle)
 fixed_background=True
-display_trajectories=False
-display_interpolation=False
+display_trajectories=True
+display_interpolation=True
 nom_image=dossier+nom_court+extension
 #------------------------------------------------------------------------------
 print ("M ","%.1e"%M,"M☉","\t%.2e"%(M*Ms),"Kg")
@@ -118,6 +118,8 @@ def trajectories(D,alpha_finder,img_res,Rs):
     #--------------------------------------------------------------------------
     alpha_min=search_alpha_min(D,img_res,Rs)   
     if display_trajectories==True:
+        plt.figure(num='trajectories')
+        plt.clf() #clear the graph to avoir superposing data from the same set (can be deactivated if need to superpose)
         ax = plt.subplot(111, projection='polar') #warning if use python in ligne (!= graphical) graphs got superposed
         plt.ylabel('phi(°)\n\n\n\n', rotation=0)
         ax.set_xlabel('R(UA)')
@@ -152,11 +154,12 @@ def trajectories(D,alpha_finder,img_res,Rs):
     print("")
 #    fin=time.process_time()
 #    print("Trajectories time:",round(fin-debut,1)) 
-#    plt.savefig('trajectories.png', format='png', dpi=1000, bbox_inches='tight')
-#    plt.savefig('trajectories.eps', format='eps', dpi=1000, bbox_inches='tight')
+
     if display_trajectories==True:
-        plt.show()   
-        plt.close() #must be fixed if use spyder graph
+#        plt.savefig('trajectories.png', format='png', dpi=1000, bbox_inches='tight')
+#        plt.savefig('trajectories.eps', format='eps', dpi=1000, bbox_inches='tight')
+        plt.draw() 
+#        plt.close() #must be fixed if use spyder graph
     return seen_angle,deviated_angle
 # =============================================================================
 npts = 20001 
@@ -441,18 +444,20 @@ def black_hole():
     seen_angle_splin,deviated_angle_splin = splin(seen_angle,deviated_angle)  #to display the interpolation( not needed for commpute)
     
     if display_interpolation==True:
-        ax3 = plt.subplot(111) #not needed for computation
+        plt.figure(num='Trajectories')
+        plt.clf() #clear the graph to avoir superposing data from the same set (can be deactivated if need to superpose)
+#        ax3 = plt.subplot(111) #not needed for computation
         plt.ylabel('deviated angle(°)')
         plt.xlabel('seen angle(°)')
         plt.title("Light deviation interpolation", va='bottom')
-        ax3.plot(seen_angle,deviated_angle,'o')
-        ax3.plot(seen_angle_splin,deviated_angle_splin)
+        plt.plot(seen_angle,deviated_angle,'o')
+        plt.plot(seen_angle_splin,deviated_angle_splin)
         #plt.xlim((100,160))
         #plt.ylim((120,350))
         #plt.savefig('interpolation.png', format='png', dpi=1000, bbox_inches='tight')
         #plt.savefig('interpolation.eps', format='eps', dpi=1000, bbox_inches='tight')
-        plt.show()
-        plt.close()
+        plt.draw()
+#        plt.close()
     last_angle=seen_angle[-1]
     print("last angle",last_angle)
     
@@ -519,7 +524,7 @@ def connect(event):  # function that listens to click event
 fig, ax = plt.subplots() #alternative to img.show     
 img=ax.imshow(img2)
 fig.canvas.set_window_title('Black hole') 
-ax.set_title("scrool to zoom in or out \nright click to add a offset in the background \nleft click to refresh image \n close the option windows to stop the program")
+ax.set_title("scrool to zoom in or out \nright click to add an offset in the background \nleft click to refresh image \n close the option windows to stop the program")
 fig.canvas.mpl_connect('scroll_event', onscroll)  #listen to events
 cid=fig.canvas.mpl_connect('button_press_event', onclick)
 fig.canvas.mpl_connect('axes_leave_event', disconnect)
@@ -601,7 +606,6 @@ def save_gif():  # function that listens to click event
         else:
             gif(int(number.get()))     
             message3["text"] = "Save: "+nom_court+" D="+str(D)+" Rs="+str(Rs)+" size="+str(final_size_img)+" offset_X=*"+extension  
-             
     except:
         message3["text"] = "need integer"   
 # =============================================================================    
@@ -614,12 +618,12 @@ frame.pack()
 
 L1 = Label(frame, text="Radius")
 L1.grid(row=0, column=0)
-radius = Entry(frame, bd =2, width=7)
+radius = Entry(frame,textvariable=StringVar(frame, value=Rs), bd =2, width=7)
 radius.grid(row=0, column=1)
 
 L2 = Label(frame, text="Distance")
 L2.grid(row=1, column=0)
-distance = Entry(frame, bd =2, width=7)
+distance = Entry(frame,textvariable=StringVar(frame, value=D), bd =2, width=7)
 distance.grid(row=1, column=1)
 
 compute_button = Button(frame, text="Compute", width=14, command=compute)
@@ -632,7 +636,7 @@ message5.grid(row=1, column=3)
 
 L3 = Label(frame, text="Image size")
 L3.grid(row=2, column=0)
-size = Entry(frame, bd =2, width=7)
+size = Entry(frame,textvariable=StringVar(frame, value=final_size_img), bd =2, width=7)
 size.grid(row=2, column=1)
  
 size_button = Button(frame, text="Resolution", width=14, command=increase_resolution)
@@ -655,9 +659,10 @@ C1 = Checkbutton(frame, text = "", variable = fixed_background, \
                  onvalue = True, offvalue = False)
 C1.grid(row=4, column=1) 
 
-L4 = Label(frame, text="Nbr")
+L4 = Label(frame, text="images")
 L4.grid(row=5, column=0)
-number = Entry(frame, bd =2, width=7)
+
+number = Entry(frame,textvariable=StringVar(frame, value=10), bd =2, width=7)
 number.grid(row=5, column=1)
 
 save_gif_button = Button(frame, text="Save animation", width=14, command=save_gif)
