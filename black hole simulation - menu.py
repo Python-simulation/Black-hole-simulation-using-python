@@ -9,6 +9,7 @@ import os.path                       #use to search files on computer
 from tkinter import Button, Tk, Frame, Entry, Label, Checkbutton, BooleanVar, StringVar
 import sys
 from numba import jit
+from tkinter.filedialog import askopenfilename
 
 # =============================================================================                 
 #Variables & constants initialisation (don't change)
@@ -425,10 +426,6 @@ def gif(nbr_offset):
         offset_X_temp=int(axe_X/nbr_offset) #at the end to have offset=0 for the first iteration
         offset_X_tot+=offset_X_temp     
 # =============================================================================     
-img_original = Image.open(nom_image, mode='r') #use equirectangular images
-img_debut=resize_img(img_original,final_size_img)
-print("FOV ",FOV_img,"*",FOV_img_Y,"°\n",sep='')
-#------------------------------------------------------------------------------
 def black_hole():
     global left_side,right_side,up_side,down_side,interpolation,img_debut,D,Rs,deviated_angle_splin,seen_angle_splin,img_res,seen_angle,deviated_angle,offset_X_tot,FOV,FOV_img,last_angle
     vrai_debut=time.process_time()
@@ -476,6 +473,14 @@ def black_hole():
     vrai_fin=time.process_time()
     print("\nglobal computing time:",round(vrai_fin-vrai_debut,1))  
 # =============================================================================    
+def open_image(nom_image):
+    img_original = Image.open(nom_image, mode='r') #use equirectangular images
+    img_debut=resize_img(img_original,final_size_img)
+    print("FOV ",FOV_img,"*",FOV_img_Y,"°\n",sep='')
+    return [img_original, img_debut]
+
+[img_original, img_debut] = open_image(nom_image)
+
 black_hole()
 # =============================================================================
 zoom=0
@@ -608,6 +613,25 @@ def save_gif():  # function that listens to click event
             message3["text"] = "Save: "+nom_court+" D="+str(D)+" Rs="+str(Rs)+" size="+str(final_size_img)+" offset_X=*"+extension  
     except:
         message3["text"] = "need integer"   
+
+def open_file_name():
+#    https://gist.github.com/Yagisanatode/0d1baad4e3a871587ab1
+    global nom_image, nom_court, extension, img_original, img_debut, img
+    nom_image = askopenfilename(initialdir="C:/Users/Batman/Documents/Programming/tkinter/",
+                       filetypes =[("Image File", ".png .jpg")],
+                       title = "Choose a image."
+                       )
+    if nom_image:
+        [img_original, img_debut] = open_image(nom_image)
+        [img_original, img_debut] = open_image(nom_image)
+        img2=Image.new( 'RGBA', (axe_X,axe_Y)) #creat a transparent image (outside of the function to recover info if must stop loop)
+        img2=img_pixels(img_debut,img2)        
+        img=ax.imshow(img2) 
+        fig.canvas.draw()
+        message2["text"] = "Done !"              
+    else:
+        print("cancel")
+
 # =============================================================================    
 root = Tk()
 frame = Frame(root)
@@ -616,60 +640,63 @@ frame.pack()
 #bottomframe = Frame(root)  #si bas diff du haut (inbrique plusieurs widgets)
 #bottomframe.pack( side = "bottom" )
 
+open_file_button = Button(frame, text="Open image", width=14, command=open_file_name)
+open_file_button.grid(row=0, column=0)
+
 L1 = Label(frame, text="Radius")
-L1.grid(row=0, column=0)
+L1.grid(row=1, column=0)
 radius = Entry(frame,textvariable=StringVar(frame, value=Rs), bd =2, width=7)
-radius.grid(row=0, column=1)
+radius.grid(row=1, column=1)
 
 L2 = Label(frame, text="Distance")
-L2.grid(row=1, column=0)
+L2.grid(row=2, column=0)
 distance = Entry(frame,textvariable=StringVar(frame, value=D), bd =2, width=7)
-distance.grid(row=1, column=1)
+distance.grid(row=2, column=1)
 
 compute_button = Button(frame, text="Compute", width=14, command=compute)
-compute_button.grid(row=0, column=2)
+compute_button.grid(row=1, column=2)
 
 message = Label(frame, text="", width=20)   #allow to display message when activate [text]
-message.grid(row=0, column=3)
+message.grid(row=1, column=3)
 message5 = Label(frame, text="", width=20)   #allow to display message when activate [text]
-message5.grid(row=1, column=3)
+message5.grid(row=2, column=3)
 
 L3 = Label(frame, text="Image size")
-L3.grid(row=2, column=0)
+L3.grid(row=3, column=0)
 size = Entry(frame,textvariable=StringVar(frame, value=final_size_img), bd =2, width=7)
-size.grid(row=2, column=1)
+size.grid(row=3, column=1)
  
 size_button = Button(frame, text="Resolution", width=14, command=increase_resolution)
-size_button.grid(row=2, column=2)   
+size_button.grid(row=3, column=2)   
 
 message2 = Label(frame, text="", width=20)   #allow to display message when activate [text]
-message2.grid(row=2, column=3)   
+message2.grid(row=3, column=3)   
 
 save_button = Button(frame, text="Save image", width=14, command=save_file)
-save_button.grid(row=3, column=2)   
+save_button.grid(row=4, column=2)   
 
 message4 = Label(frame, text="")   #allow to display message when activate [text]
-message4.grid(row=3, column=3)   
+message4.grid(row=4, column=3)   
 
 message6 = Label(frame, text="Fix background")   #allow to display message when activate [text]
-message6.grid(row=4, column=0)  
+message6.grid(row=5, column=0)  
   
 fixed_background = BooleanVar()
 C1 = Checkbutton(frame, text = "", variable = fixed_background, \
                  onvalue = True, offvalue = False)
-C1.grid(row=4, column=1) 
+C1.grid(row=5, column=1) 
 
 L4 = Label(frame, text="images")
-L4.grid(row=5, column=0)
+L4.grid(row=6, column=0)
 
 number = Entry(frame,textvariable=StringVar(frame, value=10), bd =2, width=7)
-number.grid(row=5, column=1)
+number.grid(row=6, column=1)
 
 save_gif_button = Button(frame, text="Save animation", width=14, command=save_gif)
-save_gif_button.grid(row=5, column=2)  
+save_gif_button.grid(row=6, column=2)  
 
 message3 = Label(frame, text="")   #allow to display message when activate [text]
-message3.grid(row=5, column=3) 
+message3.grid(row=6, column=3) 
 
 root.mainloop()
 #raise SystemExit  #not needed and too brutal
