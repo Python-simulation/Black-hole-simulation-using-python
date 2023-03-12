@@ -550,7 +550,7 @@ class BlackHole:
 
     def plot(self):
         """Plot the black hole and connect functions to the canvas."""
-        self.fig = plt.figure('black hole')
+        self.fig = plt.figure('Black hole')
         self.fig.clf() #clear the graph to avoir superposing data from the same set (can be deactivated if need to superpose)
         self.ax = plt.subplot()
 
@@ -560,7 +560,6 @@ class BlackHole:
             print("No black hole deformation in the memory, displayed the original image instead.")
             self.ax.imshow(self.img_debut)
 
-        self.fig.canvas.set_window_title('Black hole')
         self.ax.set_title("scrool to zoom in or out \nright click to add an offset in the background \nleft click to refresh image \n close the option windows to stop the program")
         self.fig.canvas.mpl_connect('scroll_event', self.onscroll)
         self.fig.canvas.mpl_connect('button_press_event', self.onclick)
