@@ -4,7 +4,7 @@ Black hole simulation
 
 @author: Jonathan Peltier
 
-GitHub deposit:
+GitHub repository:
 https://github.com/Python-simulation/Black-hole-simulation-using-python/
 
 BlackHole class solving photons trajectories closed to a static black hole.
@@ -41,6 +41,7 @@ class BlackHole:
     def __init__(self):
         """Main class"""
         self.init_var()
+        plt.ion()
 
         try:
             abs_path = os.path.abspath(os.path.dirname(sys.argv[0]))
@@ -164,7 +165,7 @@ class BlackHole:
         if axe_Y % 2 != 0:
             axe_Y -= 1
 
-        self.img_debut = self.img_debut.resize((axe_X, axe_Y), Image.ANTIALIAS)
+        self.img_debut = self.img_debut.resize((axe_X, axe_Y), Image.Resampling.LANCZOS)
         self.FOV_img_Y = self.FOV_img * axe_Y / axe_X
 
         if self.FOV_img_Y > 180:
@@ -631,6 +632,8 @@ class BlackHole:
         self.ax.set_ylim((down_side, up_side))
 #        print((self.left_side, self.right_side), (self.down_side, self.up_side))
         self.fig.canvas.draw()
+        plt.draw()
+        plt.pause(0.001)
 
     def onclick(self, event):
         """Use to apply an offset when right clicking. Will be replace by a
