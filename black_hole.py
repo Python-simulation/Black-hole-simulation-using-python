@@ -22,6 +22,9 @@ from tkinter import Button, Label, Checkbutton, BooleanVar, StringVar, Spinbox
 from tkinter.filedialog import askopenfilename
 
 import matplotlib.pyplot as plt  # Graphical module
+import matplotlib
+if matplotlib.get_backend() not in ("TKAgg", "Qt5Agg"):
+    matplotlib.use("TKAgg", force=True)
 #from matplotlib.widgets import Slider  # TODO: use it for offset GUI
 import numpy as np  # Use for matrices and list
 from scipy.interpolate import interp1d  # Use for interpolation
@@ -1021,4 +1024,3 @@ if __name__ == "__main__":
 #    blackhole.open(img_name, size=360)
 #    blackhole.img_resize(360)
 #    blackhole.compute(Rs=8, D=50)
-
